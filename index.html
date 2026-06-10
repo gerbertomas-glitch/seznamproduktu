@@ -199,11 +199,8 @@
                         <p class="text-sm text-gray-500 mt-1">Sledujte a upravujte svá aktivní zařízení, vizitky a stojánky na jednom místě.</p>
                     </div>
                     <div class="flex gap-3 w-full md:w-auto">
-                        <button onclick="showToast('Otevírám objednávkový formulář...')" class="bg-white border border-gray-300 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-50 transition shadow-sm w-full md:w-auto">
-                            Objednat další
-                        </button>
-                        <button onclick="openProductModal()" class="bg-brand-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-brand-600 transition shadow-sm flex items-center justify-center gap-2 whitespace-nowrap w-full md:w-auto">
-                            <i class="fa-solid fa-plus"></i> Nový produkt
+                        <button onclick="openOrderModal()" class="bg-brand-500 text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-brand-600 transition shadow-sm flex items-center justify-center gap-2 whitespace-nowrap w-full md:w-auto">
+                            <i class="fa-solid fa-cart-shopping"></i> Objednat další
                         </button>
                     </div>
                 </div>
@@ -291,6 +288,66 @@
 
             </div>
         </main>
+    </div>
+
+    <!-- MODÁLNÍ OKNO PRO OBJEDNÁVKU -->
+    <div id="order-modal" class="fixed inset-0 bg-gray-900/60 z-[60] flex items-center justify-center opacity-0 pointer-events-none transition-opacity duration-300 px-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-xl transform scale-95 transition-transform duration-300 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 shrink-0">
+                <h3 class="text-lg font-bold text-gray-900">Objednat NFC produkty</h3>
+                <button onclick="closeOrderModal()" class="text-gray-400 hover:text-gray-600 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1 space-y-5 custom-scrollbar">
+                
+                <div>
+                    <label class="label-minimal">Produkt</label>
+                    <div class="relative">
+                        <select id="order-product" class="input-minimal appearance-none pr-8">
+                            <option value="stojánek_cz">Chytrý stojánek (CZ)</option>
+                            <option value="stojánek_en">Chytrý stojánek (EN)</option>
+                            <option value="vizitka_plast">Chytrá vizitka - Plastová</option>
+                            <option value="vizitka_drevo">Chytrá vizitka - Dřevěná</option>
+                            <option value="vizitka_kov">Chytrá vizitka - Kovová</option>
+                            <option value="samolepka">Samolepka na dveře / stůl</option>
+                            <option value="plaketa">Skleněná plaketa</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 text-xs pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label class="label-minimal">Množství (ks)</label>
+                        <input type="number" id="order-quantity" class="input-minimal" value="1" min="1">
+                    </div>
+                    <div>
+                        <label class="label-minimal">Pro pobočku</label>
+                        <div class="relative">
+                            <select id="order-branch" class="input-minimal appearance-none pr-8">
+                                <option value="Praha 13">Business Power s.r.o. - Praha 13</option>
+                                <option value="Liberec">Business Power s.r.o. - Liberec</option>
+                                <option value="Brno">Business Power s.r.o. - Brno</option>
+                                <option value="Ostrava">Business Power s.r.o. - Ostrava</option>
+                                <option value="Plzeň">Business Power s.r.o. - Plzeň</option>
+                            </select>
+                            <i class="fa-solid fa-chevron-down text-gray-400 absolute right-3 top-1/2 transform -translate-y-1/2 text-xs pointer-events-none"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-50 border border-blue-100 p-4 rounded-lg flex gap-3 mt-2">
+                    <i class="fa-solid fa-circle-info text-blue-500 mt-0.5"></i>
+                    <p class="text-sm text-blue-800">Po odeslání objednávky Vás bude kontaktovat Váš obchodník pro potvrzení dodacích údajů a případné grafiky na míru.</p>
+                </div>
+
+            </div>
+            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end gap-3 shrink-0">
+                <button onclick="closeOrderModal()" class="px-5 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition shadow-sm">Zrušit</button>
+                <button onclick="submitOrder()" class="px-5 py-2 rounded-lg text-sm font-bold text-white bg-brand-500 hover:bg-brand-600 transition shadow-sm">Odeslat objednávku</button>
+            </div>
+        </div>
     </div>
 
     <!-- MODÁLNÍ OKNO PRO PŘIDÁNÍ/ÚPRAVU -->
@@ -510,7 +567,28 @@
             }
         }
 
-        // Modální okno pro Úpravu / Přidání
+        // Modální okno pro Objednávku
+        function openOrderModal() {
+            document.getElementById('order-quantity').value = 1;
+            const modal = document.getElementById('order-modal');
+            const modalContent = modal.querySelector('div');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => modalContent.classList.remove('scale-95'), 10);
+        }
+
+        function closeOrderModal() {
+            const modal = document.getElementById('order-modal');
+            const modalContent = modal.querySelector('div');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('opacity-0', 'pointer-events-none'), 300);
+        }
+
+        function submitOrder() {
+            showToast('Objednávka přijata. Váš obchodník Vás bude brzy kontaktovat.');
+            closeOrderModal();
+        }
+
+        // Modální okno pro Úpravu
         let editingId = null;
 
         function openProductModal() {
